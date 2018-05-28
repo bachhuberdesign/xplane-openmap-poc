@@ -14,7 +14,7 @@ open class UDPListener(private val callback: UDPCallback) : Thread() {
     private var isKeepRunning = true
 
     override fun run() {
-        var packet = DatagramPacket(ByteArray(64), MAX_UDP_DATAGRAM_LENGTH)
+        val packet = DatagramPacket(ByteArray(MAX_UDP_DATAGRAM_LENGTH), MAX_UDP_DATAGRAM_LENGTH)
 
         var socket: DatagramSocket? = null
 

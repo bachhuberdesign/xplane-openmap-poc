@@ -11,12 +11,17 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import io.milkcan.effortlessandroid.d
+import io.milkcan.effortlessandroid.e
 import io.milkcan.effortlessandroid.toastLong
 import xplaneopenmap.bachhuberdesign.com.openmap.R
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.support.v4.content.ContextCompat
 
 class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -25,6 +30,7 @@ class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var cameraMoved: Boolean = false
     private var dialog: AlertDialog? = null
+    private var currentFlightMarker: Marker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +54,7 @@ class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
+        map.mapType = GoogleMap.MAP_TYPE_SATELLITE
     }
 
     private fun showIpAddressDialog() {
@@ -82,14 +89,30 @@ class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
             d("Flight path position: $position")
             val cameraUpdate = CameraUpdateFactory.newLatLngZoom(position, 12.0f)
 
-            map.clear()
+            try {
+                if (currentFlightMarker == null) {
+                    val drawable = ContextCompat.getDrawable(this, R.drawable.icon_plane_marker) as BitmapDrawable
 
-            if (!cameraMoved){
-                map.moveCamera(cameraUpdate)
-                cameraMoved = true
+                    val iconBitmap = Bitmap.createScaledBitmap(drawable.bitmap, 85, 85, false)
+
+                    currentFlightMarker = map.addMarker(
+                            MarkerOptions()
+                                    .position(position)
+                                    .title("Current Flight")
+                                    .icon(BitmapDescriptorFactory.fromBitmap(iconBitmap))
+                    )
+                } else {
+                    currentFlightMarker?.position = position
+                }
+
+                if (!cameraMoved) {
+                    map.moveCamera(cameraUpdate)
+                    cameraMoved = true
+                }
+
+            } catch (ex: Exception) {
+                e("Error updating map: ${ex.message}", ex)
             }
-
-            map.addMarker(MarkerOptions().position(position).title("Current Flight"))
         })
     }
 
