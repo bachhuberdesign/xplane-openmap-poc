@@ -1,9 +1,14 @@
 package com.bachhuberdesign.xplaneopenmap.ui
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.content.DialogInterface
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
+import com.bachhuberdesign.xplaneopenmap.data.FlightMapViewModel
+import com.bachhuberdesign.xplaneopenmap.data.UDPCallback
+import com.bachhuberdesign.xplaneopenmap.data.UDPListener
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -11,11 +16,14 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import io.milkcan.effortlessandroid.toastLong
 import xplaneopenmap.bachhuberdesign.com.openmap.R
+import java.net.DatagramPacket
 
 class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
+    private lateinit var viewModel: FlightMapViewModel
 
     private var dialog: AlertDialog? = null
 
@@ -27,6 +35,7 @@ class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         mapFragment.getMapAsync(this)
 
+        initViewModel()
         showIpAddressDialog()
     }
 
@@ -64,6 +73,18 @@ class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setMessage(message)
                 .setPositiveButton("Done") { _, _ -> run {} }
                 .show()
+    }
+
+    private fun initViewModel() {
+        viewModel = ViewModelProviders.of(this).get(FlightMapViewModel::class.java)
+
+        viewModel.startUDPClient()
+
+        viewModel.getMessageStream().observe(this, Observer { toastLong("$it") })
+
+        viewModel.getFlightPathStream().observe(this, Observer {
+            // TODO: Handle display of flight location data
+        })
     }
 
 }
