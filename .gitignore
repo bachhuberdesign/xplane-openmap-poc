@@ -15,3 +15,4 @@
 /.idea/caches/
 .idea/vcs.xml
 .idea/dictionaries
+app/src/main/res/values/google_maps_api.xml
