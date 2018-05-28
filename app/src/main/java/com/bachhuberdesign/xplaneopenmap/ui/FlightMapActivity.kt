@@ -1,4 +1,4 @@
-package xplaneopenmap.bachhuberdesign.com.openmap
+package com.bachhuberdesign.xplaneopenmap.ui
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -9,6 +9,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import xplaneopenmap.bachhuberdesign.com.openmap.R
 
 class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
