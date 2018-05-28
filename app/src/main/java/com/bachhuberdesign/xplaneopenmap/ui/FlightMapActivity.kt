@@ -1,7 +1,9 @@
 package com.bachhuberdesign.xplaneopenmap.ui
 
+import android.content.DialogInterface
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -15,31 +17,53 @@ class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
 
+    private var dialog: AlertDialog? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_flight_map)
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
+
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+
         mapFragment.getMapAsync(this)
+
+        showIpAddressDialog()
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+    override fun onDestroy() {
+        if (dialog != null && dialog!!.isShowing) {
+            dialog?.dismiss()
+        }
+
+        super.onDestroy()
+    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
 
-        // Add a marker in Sydney and move the camera
         val sydney = LatLng(-34.0, 151.0)
         map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
         map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+    }
+
+    private fun showIpAddressDialog() {
+        if (dialog != null && dialog!!.isShowing) {
+            dialog?.dismiss()
+        }
+
+        val ipAddress = AndroidHelper.getLocalIpAddress()
+
+        val message = if (!ipAddress.isNullOrBlank()) {
+            "Please set your X-Plane data export to your device's IP address: $ipAddress"
+        } else {
+            "Error getting IP address for the local device. Please check and make sure that you are connected to the Wi"
+        }
+
+        dialog = AlertDialog.Builder(this)
+                .setTitle("Data Export Config")
+                .setMessage(message)
+                .setPositiveButton("Done") { _, _ -> run {} }
+                .show()
     }
 
 }
