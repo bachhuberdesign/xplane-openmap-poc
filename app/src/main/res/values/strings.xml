@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">OpenMap</string>
+    <string name="title_activity_flight_map">Flight Map</string>
+</resources>
