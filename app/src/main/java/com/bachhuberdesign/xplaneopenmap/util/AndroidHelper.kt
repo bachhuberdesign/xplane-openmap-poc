@@ -5,7 +5,7 @@ import java.net.NetworkInterface
 object AndroidHelper {
 
     @JvmStatic
-    fun getLocalIpAddress(): String? {
+    fun getDeviceLocalIpAddress(): String? {
         try {
             val interfaces = NetworkInterface.getNetworkInterfaces()
 
