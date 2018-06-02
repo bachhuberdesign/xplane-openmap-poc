@@ -8,7 +8,6 @@ import com.bachhuberdesign.xplaneopenmap.data.UDPListener
 import com.bachhuberdesign.xplaneopenmap.data.model.FlightPathWrapper
 import io.milkcan.effortlessandroid.d
 import java.net.DatagramPacket
-import java.util.*
 import java.nio.ByteOrder.LITTLE_ENDIAN
 import java.nio.ByteBuffer
 
@@ -17,6 +16,14 @@ class FlightMapViewModel : ViewModel(), UDPCallback {
     private val flightPathLiveData: MutableLiveData<FlightPathWrapper> = MutableLiveData()
     private val messageLiveData: MutableLiveData<String> = MutableLiveData()
     private var udpListener: UDPListener? = null
+
+    private var lastPitch: Float = 0.0f
+    private var lastRoll: Float = 0.0f
+    private var lastHeading: Float = 0.0f
+    private var lastLatitude: Float = 0.0f
+    private var lastLongitude: Float = 0.0f
+    private var lastAltitude: Float = 0.0f
+    private var lastSpeed: Float = 0.0f
 
     override fun onCleared() {
         udpListener?.kill()
@@ -27,12 +34,11 @@ class FlightMapViewModel : ViewModel(), UDPCallback {
     override fun onNextPacket(packet: DatagramPacket) {
         val data = packet.data
 
-        d("Packet received: ${Arrays.toString(data)}")
-
         val dataSetIndex: Int = data[5].toInt()
         val floatArray = getFloatsFromDataPacket(data)
 
         when (dataSetIndex) {
+            17 -> handlePitchRollHeadings(floatArray)
             20 -> handleLatitudeLongitudeAltitude(floatArray)
             21 -> handleLocationVelocityDistanceTravelled(floatArray)
             22 -> handleAllPlanesLatitude(floatArray)
@@ -50,24 +56,50 @@ class FlightMapViewModel : ViewModel(), UDPCallback {
     fun getMessageStream(): LiveData<String> = messageLiveData
 
     private fun handleLatitudeLongitudeAltitude(floats: FloatArray) {
-        floats.forEachIndexed { i, float -> d("handleLatitudeLongitudeAltitude $i: $float") }
+        lastLatitude = floats[0]
+        lastLongitude = floats[1]
+        lastAltitude = floats[2]
 
-        val latitude = floats[0]
-        val longitude = floats[1]
+        refreshFlightData()
+    }
 
-        flightPathLiveData.postValue(FlightPathWrapper(latitude, longitude))
+    private fun handlePitchRollHeadings(floats: FloatArray) {
+        lastPitch = floats[0]
+        lastRoll = floats[1]
+        lastHeading = floats[3]
+
+        refreshFlightData()
     }
 
     private fun handleLocationVelocityDistanceTravelled(floats: FloatArray) {
-
+        // TODO:
+        refreshFlightData()
     }
 
     private fun handleAllPlanesLatitude(floats: FloatArray) {
-
+        // TODO:
     }
 
     private fun handleAllPlanesLongitude(floats: FloatArray) {
+        // TODO:
+    }
 
+    private fun refreshFlightData() {
+        val data = FlightPathWrapper(
+                latitude = lastLatitude,
+                longitude = lastLongitude,
+                pitch = lastPitch,
+                heading = lastHeading,
+                roll = lastRoll,
+                speed = lastSpeed,
+                altitude = lastAltitude
+        )
+
+        if (flightPathLiveData.value != data) {
+            flightPathLiveData.postValue(data)
+        } else {
+            d("Flight data not changed, ignoring: $data")
+        }
     }
 
     private fun getFloatsFromDataPacket(data: ByteArray): FloatArray {
@@ -81,7 +113,14 @@ class FlightMapViewModel : ViewModel(), UDPCallback {
                 byteArrayOf(data[33], data[34], data[35], data[36]),
                 byteArrayOf(data[37], data[38], data[39], data[40])
         )
-                .map { ByteBuffer.wrap(it).order(LITTLE_ENDIAN).float }
+                .map {
+                    var float = ByteBuffer.wrap(it).order(LITTLE_ENDIAN).float
+                    if (float == -999.0f) {
+                        float = 0.0f
+                    }
+
+                    float
+                }
                 .toFloatArray()
     }
 

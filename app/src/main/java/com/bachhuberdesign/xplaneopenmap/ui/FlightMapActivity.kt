@@ -85,8 +85,9 @@ class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
         viewModel.getMessageStream().observe(this, Observer { toastLong("$it") })
 
         viewModel.getFlightPathStream().observe(this, Observer {
+            d("FlightPathWrapper: $it")
+
             val position = LatLng(it!!.latitude.toDouble(), it.longitude.toDouble())
-            d("Flight path position: $position")
             val cameraUpdate = CameraUpdateFactory.newLatLngZoom(position, 12.0f)
 
             try {
@@ -99,10 +100,12 @@ class FlightMapActivity : AppCompatActivity(), OnMapReadyCallback {
                             MarkerOptions()
                                     .position(position)
                                     .title("Current Flight")
+                                    .anchor(0.5f, 0.5f)
                                     .icon(BitmapDescriptorFactory.fromBitmap(iconBitmap))
                     )
                 } else {
                     currentFlightMarker?.position = position
+                    currentFlightMarker?.rotation = it.heading
                 }
 
                 if (!cameraMoved) {
