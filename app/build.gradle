@@ -28,12 +28,12 @@ android {
 dependencies {
     def play_services_version = "15.0.1"
     def support_library_version = "27.1.1"
-    def constraint_layout_version = "1.1.0"
-    def effortless_android_version = "1.0.4"
+    def constraint_layout_version = "1.1.2"
+    def effortless_android_version = "1.1.0"
     def effortless_prefs_version = "1.1.0"
     def architecture_components_version = "1.1.1"
     def material_drawer_version = "6.0.7"
-    def rxjava_version = "2.1.14"
+    def rxjava_version = "2.1.16"
     def rxandroid_version = "2.0.2"
     def rxkotlin_version = "2.2.0"
 
